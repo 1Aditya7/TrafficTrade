@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint Python
+        run: |
+          pip install flake8
+          flake8 . --exclude=venv --max-line-length=120
+
+      - name: Build Docker images
+        run: |
+          docker build -t traffictrade-scraper -f Dockerfile.scraper .
+          docker build -t traffictrade-dashboard -f Dockerfile.dashboard .
+
+      # Optional: Push to Docker Hub (requires secrets)
+      # - name: Log in to Docker Hub
+      #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # - name: Push images
+      #   run: |
+      #     docker tag traffictrade-scraper yourdockerid/traffictrade-scraper:latest
+      #     docker tag traffictrade-dashboard yourdockerid/traffictrade-dashboard:latest
+      #     docker push yourdockerid/traffictrade-scraper:latest
+      #     docker push yourdockerid/traffictrade-dashboard:latest
