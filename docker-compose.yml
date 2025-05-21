@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    platform: linux/arm64
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+
+  strategy:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper  # 👈 strategy must use scraper Dockerfile
+    platform: linux/arm64
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard  # 👈 dashboard uses python base
+    ports:
+      - "8601:8501"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - APCA_API_KEY_ID=${APCA_API_KEY_ID}
+      - APCA_API_SECRET_KEY=${APCA_API_SECRET_KEY}
+    env_file:
+      - .env

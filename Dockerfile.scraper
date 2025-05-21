@@ -1,0 +1,24 @@
+# Dockerfile.scraper  – final, robust
+FROM python:3.10-slim
+
+# ---------- system & chromium ----------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gnupg wget curl unzip build-essential python3-dev \
+        chromium chromium-driver \
+        fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 \
+        libnspr4 libnss3 libxss1 xdg-utils libgbm1 libu2f-udev && \
+    rm -rf /var/lib/apt/lists/*
+
+# ---------- ensure python / pip aliases ----------
+RUN ln -sf /usr/bin/python3 /usr/bin/python && \
+    ln -sf /usr/bin/pip3    /usr/bin/pip
+
+# ---------- project ----------
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+CMD ["python", "run_strategy.py"]
